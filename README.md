@@ -1,12 +1,12 @@
 # LLM-Powered Search PoC
 
-This project demonstrates how to integrate an LLM (Large Language Model) as a judge to improve and measure semantic relevance for search results. The PoC uses the Wallapop API to fetch search results and then processes these results (e.g., extracting titles and descriptions). Later phases can integrate an LLM to re-rank and evaluate relevance.
+This project demonstrates how to integrate an LLM (Large Language Model) as a judge to improve and measure semantic relevance for search results. The PoC uses the Wallapop API to fetch search results and then processes these results (e.g., extracting titles and descriptions). We integrate LangChain with Ollama using the Llama3 model to compute real relevance scores.
 
 ## Features
 - Query a live search API (Wallapop)
 - Extract and display key fields (title, description)
-- Modular code structure for further evaluation using LLMs
-- Metrics calculation (e.g., NDCG) can be added in `evaluate_relevance.py`
+- Use LangChain with Ollama and the Llama3 model to automatically score relevance
+- Modular code structure for further evaluation and metric computation (e.g., NDCG)
 
 ## Getting Started
 
@@ -56,13 +56,13 @@ python src/main.py
 ## Project Structure
 - **src/**: Contains the Python modules:
   - `search_engine.py`: Module to query the Wallapop API.
-  - `evaluate_relevance.py`: Placeholder module to integrate LLM judgment and calculate metrics.
+  - `evaluate_relevance.py`: Integrates LangChain with Ollama (Llama3) to assign relevance scores and calculate metrics.
   - `main.py`: Entry point for running the PoC.
 - **docs/**: Contains design and architecture documents.
 - **requirements.txt**: List of project dependencies.
 - **.gitignore**: Files and directories to be ignored by Git.
 
 ## Future Work
-- Integrate an LLM for re-ranking search results.
-- Add evaluation metrics (e.g., NDCG, Precision, Recall).
-- Expand the PoC to include user feedback and iterative improvements.
+- Further refine prompt engineering for better scoring.
+- Implement a more advanced NDCG or other relevance metrics.
+- Expand the PoC to include live user feedback and continuous monitoring.
