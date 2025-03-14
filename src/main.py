@@ -19,24 +19,30 @@ def re_rank_results(query: str, results):
     return sorted_results
 
 def main():
-    st.title("LLM-Powered Search PoC (No Horizontal Scroll)")
+    st.title("LLM-Powered Search PoC")
 
     query = st.text_input("Enter search query:", "silla de madera para mesa de exterior")
 
     if st.button("Search"):
-        # 1. Baseline results
+        # 1. Fetch baseline results
         results = search_engine(query)
+        
+        # Annotate each item with its original position
+        for i, r in enumerate(results):
+            r["original_index"] = i + 1
 
-        # Build a DataFrame for baseline
+        # Create a DataFrame for baseline
         baseline_df = pd.DataFrame({
+            "Original Pos.": [r["original_index"] for r in results],
             "Title": [r["title"] for r in results],
         })
 
         # 2. LLM Listwise Ranking
-        #    This returns a tuple: (sorted_list, query_intent)
-        #    where each item in sorted_list has 'llm_score' and 'llm_reasoning'
+        #    returns a tuple: (sorted_list, query_intent)
+        #    each item has 'llm_score' and 'llm_reasoning'
         listwise_results, query_intent = listwise_rank(query, copy.deepcopy(results))
         listwise_df = pd.DataFrame({
+            "Original Pos.": [r["original_index"] for r in listwise_results],
             "Title": [r["title"] for r in listwise_results],
             "LLM Score": [r.get("llm_score", "N/A") for r in listwise_results],
             "Reasoning": [r.get("llm_reasoning", "N/A") for r in listwise_results],
@@ -45,11 +51,12 @@ def main():
         # 3. LLM Pointwise Ranking
         pointwise_results = re_rank_results(query, copy.deepcopy(results))
         pointwise_df = pd.DataFrame({
+            "Original Pos.": [r["original_index"] for r in pointwise_results],
             "Title": [r["title"] for r in pointwise_results],
             "LLM Score": [r.get("llm_score", "N/A") for r in pointwise_results],
         })
 
-        # Display each ranking in its own tab
+        # Use tabs to avoid horizontal scrolling
         tab1, tab2, tab3 = st.tabs(["Baseline", "LLM Listwise", "LLM Pointwise"])
 
         with tab1:
