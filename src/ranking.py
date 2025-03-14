@@ -2,16 +2,24 @@ import math
 import re
 from typing import List, Tuple, Dict
 import logging
+from dotenv import load_dotenv
+
 from langchain_openai import ChatOpenAI
+from langchain_ollama import ChatOllama
 from src.schemas import LLMPointwiseResponse, LLMListwiseDetailedResponse
 from src.metrics import calculate_ndcg
-from src import config  # import our config module
-from dotenv import load_dotenv
+import src.config as config  # Import our config module
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-llm = ChatOpenAI()
+# Instantiate the LLM using the provider and model from config
+if config.DEFAULT_LLM_PROVIDER == "ChatOpenAI":
+    llm = ChatOpenAI(model=config.DEFAULT_LLM_MODEL, temperature=config.DEFAULT_LLM_TEMPERATURE)
+elif config.DEFAULT_LLM_PROVIDER == "ChatOllama":
+    llm = ChatOllama(model=config.DEFAULT_LLM_MODEL, temperature=config.DEFAULT_LLM_TEMPERATURE)
+else:
+    raise ValueError("Unsupported LLM provider: " + config.DEFAULT_LLM_PROVIDER)
 
 def get_relevance_score(query: str, document: str) -> float:
     """
@@ -29,7 +37,7 @@ def get_relevance_score(query: str, document: str) -> float:
 def re_rank_results(query: str, results: List[Dict]) -> List[Dict]:
     """
     Re-ranks search results based on pointwise LLM relevance scores.
-    Each result is annotated with its LLM score and then sorted in descending order.
+    Annotates each result with its LLM score and sorts them in descending order.
     """
     for item in results:
         document = f"{item.get('title', '')} {item.get('description', '')}"
@@ -52,8 +60,9 @@ def evaluate_results(query: str, results: List[Dict]) -> Tuple[float, List[float
 
 def listwise_rank(query: str, results: List[Dict]) -> Tuple[List[Dict], str]:
     """
-    Uses a listwise prompt to rank search results.
-    The LLM returns a JSON object with 'query_intent' and a 'ranking' list (each item having 'index', 'score', and 'reasoning').
+    Uses a listwise prompt (from config) to rank search results.
+    The LLM returns a JSON object with 'query_intent' and 'ranking' list.
+    Each ranking item has 'index', 'score', and 'reasoning'.
     Returns a tuple (sorted_results, query_intent).
     """
     results_block = ""

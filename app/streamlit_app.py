@@ -72,7 +72,6 @@ def run_csv_bulk():
         with st.expander("Advanced Filters"):
             filters = {}
             numeric_columns = df.select_dtypes(include=["number"]).columns.tolist()
-            # Group filters in rows of 6 columns
             for i in range(0, len(numeric_columns), 6):
                 cols = st.columns(6)
                 for j, col in enumerate(numeric_columns[i:i+6]):
@@ -145,9 +144,24 @@ def run_settings():
     st.markdown("### Configure Prompt Templates for Ranking")
     new_pointwise = st.text_area("Pointwise Prompt Template", value=config.DEFAULT_POINTWISE_PROMPT, height=150)
     new_listwise = st.text_area("Listwise Prompt Template", value=config.DEFAULT_LISTWISE_PROMPT, height=150)
+    
+    st.markdown("### Configure LLM Settings")
+    provider_options = ["ChatOpenAI", "ChatOllama"]
+    new_provider = st.selectbox("LLM Provider", options=provider_options, index=provider_options.index(config.DEFAULT_LLM_PROVIDER))
+    # Define possible model options based on provider
+    if new_provider == "ChatOpenAI":
+        model_options = ["gpt-4o-mini", "gpt-4", "gpt-3.5-turbo"]
+    else:
+        model_options = ["llama3.3:latest", "llama3.2:latest"]
+    new_model = st.selectbox("LLM Model", options=model_options, index=model_options.index(config.DEFAULT_LLM_MODEL) if config.DEFAULT_LLM_MODEL in model_options else 0)
+    new_temperature = st.slider("LLM Temperature", min_value=0.0, max_value=1.0, value=config.DEFAULT_LLM_TEMPERATURE, step=0.1)
+    
     if st.button("Save Settings", key="save_settings"):
         config.DEFAULT_POINTWISE_PROMPT = new_pointwise
         config.DEFAULT_LISTWISE_PROMPT = new_listwise
+        config.DEFAULT_LLM_PROVIDER = new_provider
+        config.DEFAULT_LLM_MODEL = new_model
+        config.DEFAULT_LLM_TEMPERATURE = new_temperature
         st.success("Settings updated successfully!")
 
 def main():
