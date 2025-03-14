@@ -73,20 +73,23 @@ def run_csv_bulk():
         with st.expander("Advanced Filters"):
             filters = {}
             numeric_columns = df.select_dtypes(include=["number"]).columns.tolist()
-            for col in numeric_columns:
-                col_min = float(df[col].min())
-                col_max = float(df[col].max())
-                if col_min == col_max:
-                    filters[col] = (col_min, col_max)
-                    st.info(f"Column '{col}' has a constant value ({col_min}); no range filter applied.")
-                else:
-                    filters[col] = st.slider(
-                        f"{col} range", 
-                        min_value=col_min, 
-                        max_value=col_max, 
-                        value=(col_min, col_max), 
-                        key=f"filter_{col}"
-                    )
+            # Group numeric columns in rows of 4
+            for i in range(0, len(numeric_columns), 6):
+                cols = st.columns(6)
+                for j, col in enumerate(numeric_columns[i:i+6]):
+                    col_min = float(df[col].min())
+                    col_max = float(df[col].max())
+                    if col_min == col_max:
+                        filters[col] = (col_min, col_max)
+                        cols[j].info(f"'{col}' constant: {col_min}")
+                    else:
+                        filters[col] = cols[j].slider(
+                            f"{col} range", 
+                            min_value=col_min, 
+                            max_value=col_max, 
+                            value=(col_min, col_max), 
+                            key=f"filter_{col}"
+                        )
         
         # Apply filters from the advanced panel
         filtered_df = df.copy()
