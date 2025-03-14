@@ -4,3 +4,6 @@ requests
 langchain_openai
 pydantic
 python-dotenv
+langchain_aws
+langchain_ollama
+langchain-google-genai

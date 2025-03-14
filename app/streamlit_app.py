@@ -146,13 +146,29 @@ def run_settings():
     new_listwise = st.text_area("Listwise Prompt Template", value=config.DEFAULT_LISTWISE_PROMPT, height=150)
     
     st.markdown("### Configure LLM Settings")
-    provider_options = ["ChatOpenAI", "ChatOllama"]
-    new_provider = st.selectbox("LLM Provider", options=provider_options, index=provider_options.index(config.DEFAULT_LLM_PROVIDER))
-    # Define possible model options based on provider
+    provider_options = []
+    if os.getenv("OPENAI_API_KEY"):
+        provider_options.append("ChatOpenAI")
+    if os.getenv("GEMINI_API_KEY"):
+        provider_options.append("ChatGemini")
+    if os.getenv("BEDROCK_API_KEY"):
+        provider_options.append("ChatBedrock")
+    if not provider_options:
+        provider_options.append("ChatOpenAI")
+        st.warning("No API keys found; defaulting to ChatOpenAI provider.")
+    
+    new_provider = st.selectbox("LLM Provider", options=provider_options, index=provider_options.index(config.DEFAULT_LLM_PROVIDER) if config.DEFAULT_LLM_PROVIDER in provider_options else 0)
+    
+    # Define model options based on selected provider
     if new_provider == "ChatOpenAI":
         model_options = ["gpt-4o-mini", "gpt-4", "gpt-3.5-turbo"]
+    elif new_provider == "ChatGemini":
+        model_options = ["gemini-1.5-pro", "gemini-model-2"]
+    elif new_provider == "ChatBedrock":
+        model_options = ["amazon.titan-text-express-v1", "bedrock-model-2"]
     else:
-        model_options = ["llama3.3:latest", "llama3.2:latest"]
+        model_options = []
+    
     new_model = st.selectbox("LLM Model", options=model_options, index=model_options.index(config.DEFAULT_LLM_MODEL) if config.DEFAULT_LLM_MODEL in model_options else 0)
     new_temperature = st.slider("LLM Temperature", min_value=0.0, max_value=1.0, value=config.DEFAULT_LLM_TEMPERATURE, step=0.1)
     
@@ -163,6 +179,7 @@ def run_settings():
         config.DEFAULT_LLM_MODEL = new_model
         config.DEFAULT_LLM_TEMPERATURE = new_temperature
         st.success("Settings updated successfully!")
+
 
 def main():
     st.title("LLM-Powered Search PoC")

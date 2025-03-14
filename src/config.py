@@ -16,6 +16,6 @@ DEFAULT_LISTWISE_PROMPT = (
 )
 
 # LLM configuration defaults
-DEFAULT_LLM_PROVIDER = "ChatOpenAI"  # Options: "ChatOpenAI", "ChatOllama"
-DEFAULT_LLM_MODEL = "gpt-4o-mini"      # For ChatOpenAI; for ChatOllama, e.g., "llama3.3:latest"
+DEFAULT_LLM_PROVIDER = "ChatOpenAI"  # Options: "ChatOpenAI", "ChatGemini", "ChatBedrock"
+DEFAULT_LLM_MODEL = "gpt-4o-mini"      # For ChatOpenAI; for ChatGemini, e.g., "gemini-model-1"; for ChatBedrock, e.g., "bedrock-model-1"
 DEFAULT_LLM_TEMPERATURE = 0.0
