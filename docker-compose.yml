@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  streamlit-app:
+    build: .
+    ports:
+      - "7777:7777"
+    volumes:
+      # Mount the whole project for hot reload
+      - ./:/app
+      # (Optional) If you want to isolate src specifically, you could also mount it separately:
+      # - ./src:/app/src
+    environment:
+      - STREAMLIT_SERVER_HEADLESS=true
+      - PYTHONUNBUFFERED=1
