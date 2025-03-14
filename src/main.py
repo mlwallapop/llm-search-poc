@@ -1,43 +1,40 @@
 import streamlit as st
+import pandas as pd
 from search_engine import search_engine
 from evaluate_relevance import get_relevance_score, listwise_rank
 
-def re_rank_results(query: str, results):
-    """
-    Re-ranks the search results based on LLM relevance scores using a pointwise approach.
-    Each result is annotated with an individual LLM score, and then the list is sorted
-    in descending order of those scores.
-    """
-    for item in results:
-        document = f"{item.get('title', '')} {item.get('description', '')}"
-        item['llm_score'] = get_relevance_score(query, document)
-    sorted_results = sorted(results, key=lambda x: x['llm_score'], reverse=True)
-    return sorted_results
+st.set_page_config(layout="wide")
 
 def main():
     st.title("LLM-Powered Search PoC")
+    
     query = st.text_input("Enter search query:", "silla de madera para mesa de exterior")
-    #results = search_engine(query)
-    #print(listwise_rank(query, results))
+    
     if st.button("Search"):
-        # Fetch results from the search engine (baseline order)
+        # Fetch baseline results from the search engine
         results = search_engine(query)
         
-        st.subheader("Baseline Order")
-        for idx, res in enumerate(results, start=1):
-            st.write(f"{idx}. {res['title']}")
+        baseline_df = pd.DataFrame({
+            "Title": [res["title"] for res in results]
+        })
         
-        # Get a listwise re-ranked order
-        sorted_listwise = listwise_rank(query, results)
-        st.subheader("LLM Re-ranked Order (Listwise)")
-        for idx, res in enumerate(sorted_listwise, start=1):
-            st.write(f"{idx}. {res['title']} (Score: {res.get('llm_score', 'N/A')})")
+        # Obtain listwise re-ranked results (with additional score and reasoning)
+        sorted_listwise, query_intent = listwise_rank(query, results)
+        listwise_df = pd.DataFrame({
+            "Title": [res["title"] for res in sorted_listwise],
+            "LLM Score": [res.get("llm_score", "N/A") for res in sorted_listwise],
+            "Reasoning": [res.get("llm_reasoning", "N/A") for res in sorted_listwise]
+        })
         
-        # Also show pointwise re-ranking for comparison
-        sorted_pointwise = re_rank_results(query, results)
-        st.subheader("LLM Re-ranked Order (Pointwise)")
-        for idx, res in enumerate(sorted_pointwise, start=1):
-            st.write(f"{idx}. {res['title']} (Score: {res.get('llm_score', 'N/A')})")
+        # Display baseline and listwise ranking in two columns (each occupying half width)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Baseline Order")
+            st.dataframe(baseline_df, use_container_width=True)
+        with col2:
+            st.subheader("LLM Listwise Ranking")
+            st.write("Model interpreted query as:", query_intent)
+            st.dataframe(listwise_df, use_container_width=True)
 
 if __name__ == "__main__":
     main()

@@ -14,13 +14,15 @@ llm = ChatOpenAI()  # or use your Ollama setup if needed
 class LLMPointwiseResponse(BaseModel):
     score: float
 
-# New detailed listwise schema for ranking results with scores
+# New detailed listwise models
 class LLMListwiseDetailedItem(BaseModel):
-    index: int   # The original position (1-indexed) of the result
-    score: float # The relevance score for that result
+    index: int      # original position (1-indexed)
+    score: float    # relevance score between 1 and 10
+    reasoning: str  # brief explanation behind the score
 
 class LLMListwiseDetailedResponse(BaseModel):
-    ranking: List[LLMListwiseDetailedItem]
+    query_intent: str               # how the model understood the query
+    ranking: List[LLMListwiseDetailedItem]  # list of ranked items
 
 def get_relevance_score(query: str, document: str) -> float:
     """
@@ -63,24 +65,23 @@ def evaluate_results(query: str, results):
     ndcg = calculate_ndcg(scores)
     return ndcg, scores
 
+
 def listwise_rank(query: str, results):
     """
-    Builds a prompt including all search results (titles and descriptions) and asks the LLM
-    to return a ranked list of items along with their scores in JSON format.
-    The expected output format is a JSON list with objects having 'index' (the original position)
-    and 'score' (the relevance score). For example:
-    
-    [
-      {"index": 2, "score": 9.2},
-      {"index": 1, "score": 8.5}
-    ]
-    
-    The function then reorders the results based on the returned ranking and attaches the score.
+    Creates a prompt that includes all search results (titles and descriptions)
+    and asks the LLM to return a ranked list with each item's score and reasoning,
+    as well as a property 'query_intent' that explains how the model interpreted the query.
+    The expected output is a JSON object with two keys:
+      - "query_intent": a string,
+      - "ranking": a list of objects with "index", "score", and "reasoning".
+    Returns a tuple: (sorted_results, query_intent)
     """
     prompt = (
-        f"Rank the following search results for the query a semantic level: '{query}' from most to least relevant. "
-        f"Return the ranking as a JSON list of objects, where each object contains the original index (starting at 1) and a relevance score (between 1 and 10). "
-        f"For example: [{{'index': 2, 'score': 9.2}}, {{'index': 1, 'score': 8.5}}].\n\n"
+        f"Rank the following search results for the query: '{query}' from most to least relevant. "
+        "For each result, provide an object with 'index' (the original position, starting at 1), "
+        "'score' (a relevance score between 1 and 10), and 'reasoning' (a brief explanation of why that score was given). "
+        "Also, include a property 'query_intent' that describes how you interpreted the query. "
+        "Return the result as a JSON object with keys 'query_intent' and 'ranking'.\n\n"
     )
     for idx, item in enumerate(results, start=1):
         title = item.get('title', '')
@@ -89,19 +90,19 @@ def listwise_rank(query: str, results):
     
     # Get the structured response using our detailed schema
     response = llm.with_structured_output(LLMListwiseDetailedResponse).invoke(prompt)
-    # response.ranking is a list of items with index and score
+    
     new_ranking = response.ranking
+    query_intent = response.query_intent
     
-    # Build a dictionary mapping the original index to the score
-    
-    # Reorder results based on the ranking provided by the LLM and attach the score
     sorted_results = []
     for ranking_item in new_ranking:
         if 1 <= ranking_item.index <= len(results):
             result = results[ranking_item.index - 1]
+            # Attach the score and reasoning to each result
             result['llm_score'] = ranking_item.score
+            result['llm_reasoning'] = ranking_item.reasoning
             sorted_results.append(result)
-    return sorted_results
+    return sorted_results, query_intent
 
 if __name__ == "__main__":
     # Example test using dummy results
