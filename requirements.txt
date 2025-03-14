@@ -1,5 +1,9 @@
 requests
 langchain
+streamlit
+langchain_ollama
+langchain_openai
+python-dotenv
 # Optionally, add additional dependencies such as:
 # matplotlib==3.6.3  # for dashboards/visualizations
 # numpy==1.23.5      # if needed for metric calculations
