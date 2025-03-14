@@ -2,8 +2,8 @@ import requests
 
 def search_engine(query, latitude=41.387917, longitude=2.1699187):
     """
-    Queries the Wallapop API with the given query and returns a list of dictionaries
-    containing the title and description of each result.
+    Queries the Wallapop API with the provided query and returns a list of dictionaries.
+    Each dictionary contains the title and description of a search result.
     """
     url = "https://api.wallapop.com/api/v3/search"
     params = {
@@ -35,7 +35,7 @@ def search_engine(query, latitude=41.387917, longitude=2.1699187):
     }
     
     response = requests.get(url, headers=headers, params=params)
-    response.raise_for_status()  # Raises an error if the request fails
+    response.raise_for_status()
     data = response.json()
 
     results = []
@@ -44,14 +44,4 @@ def search_engine(query, latitude=41.387917, longitude=2.1699187):
         title = item.get("title", "")
         description = item.get("description", "")
         results.append({"title": title, "description": description})
-    
     return results
-
-if __name__ == "__main__":
-    # Quick test for the search engine
-    query = "silla de madera para mesa de exterior"
-    results = search_engine(query)
-    for res in results:
-        print("Title:", res["title"])
-        print("Description:", res["description"])
-        print("----------")
