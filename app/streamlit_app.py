@@ -9,6 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from src.search_engine import search_engine
 from src.ranking import get_relevance_score, listwise_rank, re_rank_results
+import src.config as config
 
 st.set_page_config(layout="wide", page_title="LLM-Powered Search PoC")
 
@@ -55,7 +56,6 @@ def run_manual_query():
 
 def run_csv_bulk():
     st.header("CSV Bulk Analysis")
-    # Place the file uploader and delimiter selector on one row
     col_file, col_delim = st.columns(2)
     with col_file:
         uploaded_file = st.file_uploader("Choose CSV file", type=["csv"], key="bulk_csv")
@@ -69,11 +69,10 @@ def run_csv_bulk():
             st.error("Error reading CSV file. Please check the delimiter or file format.")
             st.stop()
         
-        # Create an expander panel for all filters
         with st.expander("Advanced Filters"):
             filters = {}
             numeric_columns = df.select_dtypes(include=["number"]).columns.tolist()
-            # Group numeric columns in rows of 4
+            # Group filters in rows of 6 columns
             for i in range(0, len(numeric_columns), 6):
                 cols = st.columns(6)
                 for j, col in enumerate(numeric_columns[i:i+6]):
@@ -84,14 +83,13 @@ def run_csv_bulk():
                         cols[j].info(f"'{col}' constant: {col_min}")
                     else:
                         filters[col] = cols[j].slider(
-                            f"{col} range", 
-                            min_value=col_min, 
-                            max_value=col_max, 
-                            value=(col_min, col_max), 
+                            f"{col} range",
+                            min_value=col_min,
+                            max_value=col_max,
+                            value=(col_min, col_max),
                             key=f"filter_{col}"
                         )
         
-        # Apply filters from the advanced panel
         filtered_df = df.copy()
         for col, (min_val, max_val) in filters.items():
             filtered_df = filtered_df[(filtered_df[col] >= min_val) & (filtered_df[col] <= max_val)]
@@ -99,10 +97,8 @@ def run_csv_bulk():
         st.markdown("### Filtered Data")
         st.dataframe(filtered_df, use_container_width=True)
         
-        # Add a button to manually trigger bulk processing
         if st.button("Process Bulk", key="process_bulk"):
             st.markdown("## Bulk Analysis by Keyword")
-            # For each row (each keyword), process the analysis
             for idx, row in filtered_df.iterrows():
                 keyword = row.get("search_keywords", None)
                 if not keyword:
@@ -144,16 +140,26 @@ def run_csv_bulk():
                         st.subheader("LLM Pointwise Ranking")
                         st.dataframe(pointwise_df, use_container_width=True)
 
+def run_settings():
+    st.header("Settings")
+    st.markdown("### Configure Prompt Templates for Ranking")
+    new_pointwise = st.text_area("Pointwise Prompt Template", value=config.DEFAULT_POINTWISE_PROMPT, height=150)
+    new_listwise = st.text_area("Listwise Prompt Template", value=config.DEFAULT_LISTWISE_PROMPT, height=150)
+    if st.button("Save Settings", key="save_settings"):
+        config.DEFAULT_POINTWISE_PROMPT = new_pointwise
+        config.DEFAULT_LISTWISE_PROMPT = new_listwise
+        st.success("Settings updated successfully!")
+
 def main():
     st.title("LLM-Powered Search PoC")
-    # Top-level tabs: one for manual query and one for CSV bulk analysis
-    top_tab1, top_tab2 = st.tabs(["Manual Query", "CSV Bulk Analysis"])
+    top_tab1, top_tab2, top_tab3 = st.tabs(["Manual Query", "CSV Bulk Analysis", "Settings"])
     
     with top_tab1:
         run_manual_query()
-    
     with top_tab2:
         run_csv_bulk()
+    with top_tab3:
+        run_settings()
 
 if __name__ == "__main__":
     main()
