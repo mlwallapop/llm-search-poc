@@ -1,9 +1,10 @@
 import requests
+from typing import List, Dict
 
-def search_engine(query, latitude=41.387917, longitude=2.1699187):
+def search_engine(query: str, latitude: float = 41.387917, longitude: float = 2.1699187) -> List[Dict]:
     """
     Queries the Wallapop API with the provided query and returns a list of dictionaries.
-    Each dictionary contains the title and description of a search result.
+    Each dictionary contains the 'title' and 'description' of a search result.
     """
     url = "https://api.wallapop.com/api/v3/search"
     params = {

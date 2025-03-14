@@ -1,13 +1,13 @@
 import math
+from typing import List
 
-def calculate_ndcg(scores):
+def calculate_ndcg(scores: List[float]) -> float:
     """
     Calculate the Normalized Discounted Cumulative Gain (NDCG) for a list of relevance scores.
-    DCG is calculated as: sum((2^score - 1) / log2(i + 2)) for each score.
-    IDCG is the DCG of the ideal (sorted) order.
+    DCG = sum((2^score - 1) / log2(i + 2)) for each score.
     Returns the NDCG value.
     """
-    def dcg(relevances):
+    def dcg(relevances: List[float]) -> float:
         return sum((2 ** rel - 1) / math.log2(i + 2) for i, rel in enumerate(relevances))
     
     dcg_val = dcg(scores)

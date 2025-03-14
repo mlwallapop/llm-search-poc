@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize the LLM (change to your desired model and parameters)
-llm = ChatOpenAI()  # or use your Ollama setup if needed
+llm = ChatOpenAI(model='gpt-4o-mini', temperature=0)  # or use your Ollama setup if needed
 
 # Existing pointwise response model
 class LLMPointwiseResponse(BaseModel):
