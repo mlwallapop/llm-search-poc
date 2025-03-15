@@ -2,30 +2,30 @@ import math
 import re
 from typing import List, Tuple, Dict
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 
-from langchain_openai import ChatOpenAI
-from langchain_ollama import ChatOllama
 from src.schemas import LLMPointwiseResponse, LLMListwiseDetailedResponse
 from src.metrics import calculate_ndcg
-import src.config as config  # Import our config module
+import src.config as config
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
-# Instantiate the LLM using the provider and model from config
+# Instantiate the LLM based on the provider specified in config
 if config.DEFAULT_LLM_PROVIDER == "ChatOpenAI":
+    from langchain_openai import ChatOpenAI
     llm = ChatOpenAI(model=config.DEFAULT_LLM_MODEL, temperature=config.DEFAULT_LLM_TEMPERATURE)
-elif config.DEFAULT_LLM_PROVIDER == "ChatOllama":
-    llm = ChatOllama(model=config.DEFAULT_LLM_MODEL, temperature=config.DEFAULT_LLM_TEMPERATURE)
+elif config.DEFAULT_LLM_PROVIDER == "ChatGemini":
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    llm = ChatGoogleGenerativeAI(model=config.DEFAULT_LLM_MODEL, temperature=config.DEFAULT_LLM_TEMPERATURE)
+elif config.DEFAULT_LLM_PROVIDER == "ChatBedrock":
+    from langchain_aws import BedrockLLM
+    llm = BedrockLLM(credentials_profile_name="bedrock-admin", model_id=config.DEFAULT_LLM_MODEL)
 else:
     raise ValueError("Unsupported LLM provider: " + config.DEFAULT_LLM_PROVIDER)
 
 def get_relevance_score(query: str, document: str) -> float:
-    """
-    Uses the LLM to rate the relevance of a document given a query.
-    Returns a float score extracted from the structured LLM output.
-    """
     prompt = config.DEFAULT_POINTWISE_PROMPT.format(query=query, document=document)
     try:
         response = llm.with_structured_output(LLMPointwiseResponse).invoke(prompt)
@@ -36,35 +36,37 @@ def get_relevance_score(query: str, document: str) -> float:
 
 def re_rank_results(query: str, results: List[Dict]) -> List[Dict]:
     """
-    Re-ranks search results based on pointwise LLM relevance scores.
-    Annotates each result with its LLM score and sorts them in descending order.
+    Re-ranks search results using pointwise LLM relevance scores in parallel.
+    Each result is processed concurrently using a thread pool (with a maximum number of workers
+    defined in config.DEFAULT_CONCURRENT_PROCESSES). After all scores are computed, the results
+    are sorted in descending order by the LLM score.
     """
-    for item in results:
-        document = f"{item.get('title', '')} {item.get('description', '')}"
-        item['llm_score'] = get_relevance_score(query, document)
+    max_workers = config.DEFAULT_CONCURRENT_PROCESSES
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_item = {
+            executor.submit(get_relevance_score, query, f"{item.get('title','')} {item.get('description','')}"): item
+            for item in results
+        }
+        for future in as_completed(future_to_item):
+            item = future_to_item[future]
+            try:
+                item['llm_score'] = future.result()
+            except Exception as exc:
+                logging.exception("Error computing score for item")
+                item['llm_score'] = 0.0
     sorted_results = sorted(results, key=lambda x: x['llm_score'], reverse=True)
     return sorted_results
 
 def evaluate_results(query: str, results: List[Dict]) -> Tuple[float, List[float]]:
-    """
-    Obtains pointwise LLM scores for each result and calculates NDCG.
-    Returns a tuple (ndcg, scores).
-    """
     scores = []
     for item in results:
-        document = f"{item.get('title', '')} {item.get('description', '')}"
+        document = f"{item.get('title','')} {item.get('description','')}"
         score = get_relevance_score(query, document)
         scores.append(score)
     ndcg = calculate_ndcg(scores)
     return ndcg, scores
 
 def listwise_rank(query: str, results: List[Dict]) -> Tuple[List[Dict], str]:
-    """
-    Uses a listwise prompt (from config) to rank search results.
-    The LLM returns a JSON object with 'query_intent' and 'ranking' list.
-    Each ranking item has 'index', 'score', and 'reasoning'.
-    Returns a tuple (sorted_results, query_intent).
-    """
     results_block = ""
     for idx, item in enumerate(results, start=1):
         title = item.get("title", "")
@@ -100,4 +102,4 @@ if __name__ == "__main__":
     ranked_results, intent = listwise_rank(dummy_query, dummy_results)
     print("Model interpreted query as:", intent)
     for idx, res in enumerate(ranked_results, start=1):
-        print(f"{idx}. {res['title']} (Score: {res.get('llm_score', 'N/A')}, Reasoning: {res.get('llm_reasoning', 'N/A')})")
+        print(f"{idx}. {res['title']} (Score: {res.get('llm_score','N/A')}, Reasoning: {res.get('llm_reasoning','N/A')})")

@@ -8,8 +8,6 @@ services:
     volumes:
       # Mount the whole project for hot reload
       - ./:/app
-      # (Optional) If you want to isolate src specifically, you could also mount it separately:
-      # - ./src:/app/src
     environment:
       - STREAMLIT_SERVER_HEADLESS=true
       - PYTHONUNBUFFERED=1

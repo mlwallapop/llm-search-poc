@@ -22,9 +22,11 @@ def run_manual_query():
         for i, r in enumerate(results):
             r["original_index"] = i + 1
 
+        # Baseline table now includes Description
         baseline_df = pd.DataFrame({
             "Original Pos.": [r["original_index"] for r in results],
-            "Title": [r["title"] for r in results]
+            "Title": [r["title"] for r in results],
+            "Description": [r["description"] for r in results]
         })
         
         listwise_results, query_intent = listwise_rank(query, copy.deepcopy(results))
@@ -72,9 +74,9 @@ def run_csv_bulk():
         with st.expander("Advanced Filters"):
             filters = {}
             numeric_columns = df.select_dtypes(include=["number"]).columns.tolist()
-            for i in range(0, len(numeric_columns), 6):
-                cols = st.columns(6)
-                for j, col in enumerate(numeric_columns[i:i+6]):
+            for i in range(0, len(numeric_columns), 4):
+                cols = st.columns(4)
+                for j, col in enumerate(numeric_columns[i:i+4]):
                     col_min = float(df[col].min())
                     col_max = float(df[col].max())
                     if col_min == col_max:
@@ -107,9 +109,11 @@ def run_csv_bulk():
                     for i, r in enumerate(results):
                         r["original_index"] = i + 1
                     
+                    # Baseline table now includes Description
                     baseline_df = pd.DataFrame({
                         "Original Pos.": [r["original_index"] for r in results],
-                        "Title": [r["title"] for r in results]
+                        "Title": [r["title"] for r in results],
+                        "Description": [r["description"] for r in results]
                     })
                     
                     listwise_results, query_intent = listwise_rank(keyword, copy.deepcopy(results))
@@ -156,21 +160,20 @@ def run_settings():
     if not provider_options:
         provider_options.append("ChatOpenAI")
         st.warning("No API keys found; defaulting to ChatOpenAI provider.")
-    
     new_provider = st.selectbox("LLM Provider", options=provider_options, index=provider_options.index(config.DEFAULT_LLM_PROVIDER) if config.DEFAULT_LLM_PROVIDER in provider_options else 0)
-    
-    # Define model options based on selected provider
     if new_provider == "ChatOpenAI":
         model_options = ["gpt-4o-mini", "gpt-4", "gpt-3.5-turbo"]
     elif new_provider == "ChatGemini":
-        model_options = ["gemini-1.5-pro", "gemini-model-2"]
+        model_options = ["gemini-model-1", "gemini-model-2"]
     elif new_provider == "ChatBedrock":
         model_options = ["amazon.titan-text-express-v1", "bedrock-model-2"]
     else:
         model_options = []
-    
     new_model = st.selectbox("LLM Model", options=model_options, index=model_options.index(config.DEFAULT_LLM_MODEL) if config.DEFAULT_LLM_MODEL in model_options else 0)
     new_temperature = st.slider("LLM Temperature", min_value=0.0, max_value=1.0, value=config.DEFAULT_LLM_TEMPERATURE, step=0.1)
+    
+    st.markdown("### Configure Concurrency Settings")
+    new_concurrency = st.number_input("Concurrent Processes", min_value=1, max_value=20, value=config.DEFAULT_CONCURRENT_PROCESSES, step=1)
     
     if st.button("Save Settings", key="save_settings"):
         config.DEFAULT_POINTWISE_PROMPT = new_pointwise
@@ -178,8 +181,8 @@ def run_settings():
         config.DEFAULT_LLM_PROVIDER = new_provider
         config.DEFAULT_LLM_MODEL = new_model
         config.DEFAULT_LLM_TEMPERATURE = new_temperature
+        config.DEFAULT_CONCURRENT_PROCESSES = new_concurrency
         st.success("Settings updated successfully!")
-
 
 def main():
     st.title("LLM-Powered Search PoC")

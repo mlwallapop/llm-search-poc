@@ -17,5 +17,8 @@ DEFAULT_LISTWISE_PROMPT = (
 
 # LLM configuration defaults
 DEFAULT_LLM_PROVIDER = "ChatOpenAI"  # Options: "ChatOpenAI", "ChatGemini", "ChatBedrock"
-DEFAULT_LLM_MODEL = "gpt-4o-mini"      # For ChatOpenAI; for ChatGemini, e.g., "gemini-model-1"; for ChatBedrock, e.g., "bedrock-model-1"
+DEFAULT_LLM_MODEL = "gpt-4o-mini"      # For ChatOpenAI; for ChatGemini, e.g., "gemini-model-1"; for ChatBedrock, e.g., "amazon.titan-text-express-v1"
 DEFAULT_LLM_TEMPERATURE = 0.0
+
+# Default number of concurrent processes for pointwise ranking
+DEFAULT_CONCURRENT_PROCESSES = 5
