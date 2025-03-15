@@ -12,17 +12,48 @@ from src.ranking import get_relevance_score, listwise_rank, re_rank_results
 import src.config as config
 
 st.set_page_config(layout="wide", page_title="LLM-Powered Search PoC")
+import folium
+from streamlit_folium import st_folium
 
 def run_manual_query():
     st.header("Manual Query Analysis")
     query = st.text_input("Enter search query:", "silla de madera para mesa de exterior", key="manual_query")
     
+    # Default coordinates (e.g., Barcelona)
+    default_lat = 41.387917
+    default_lon = 2.1699187
+
+    st.markdown("### Adjust Search Location")
+    st.info("Drag the marker and then click on the map to update the coordinates.")
+
+    # Create a folium map with a draggable marker
+    m = folium.Map(location=[default_lat, default_lon], zoom_start=12)
+    folium.Marker(
+        location=[default_lat, default_lon],
+        popup="Drag me!",
+        draggable=True
+    ).add_to(m)
+    
+    # Render the map and capture the state
+    map_data = st_folium(m, width=700, height=450)
+    
+    # Extract updated coordinates:
+    # (Note: st_folium returns 'last_clicked' when the map is clicked.
+    # To update coordinates, drag the marker then click anywhere on the map.)
+    if map_data and map_data.get("last_clicked"):
+        lat = map_data["last_clicked"]["lat"]
+        lon = map_data["last_clicked"]["lng"]
+    else:
+        lat = default_lat
+        lon = default_lon
+
+    st.write(f"Selected location: {lat}, {lon}")
+    
     if st.button("Search (Manual)", key="manual_search"):
-        results = search_engine(query)
+        results = search_engine(query, latitude=lat, longitude=lon)
         for i, r in enumerate(results):
             r["original_index"] = i + 1
 
-        # Baseline table now includes Description
         baseline_df = pd.DataFrame({
             "Original Pos.": [r["original_index"] for r in results],
             "Title": [r["title"] for r in results],
@@ -55,7 +86,7 @@ def run_manual_query():
         with m_tab3:
             st.subheader("LLM Pointwise Ranking")
             st.dataframe(pointwise_df, use_container_width=True)
-
+            
 def run_csv_bulk():
     st.header("CSV Bulk Analysis")
     col_file, col_delim = st.columns(2)
