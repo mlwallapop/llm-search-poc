@@ -17,38 +17,42 @@ from streamlit_folium import st_folium
 
 def run_manual_query():
     st.header("Manual Query Analysis")
-    query = st.text_input("Enter search query:", "silla de madera para mesa de exterior", key="manual_query")
+
+    # Place query input and map side by side (50% each)
+    col1, col2 = st.columns(2)
     
-    # Default coordinates (e.g., Barcelona)
+    with col1:
+        query = st.text_input("Search query:", "silla de madera para mesa de exterior", key="manual_query")
+    
+    # Default coordinates (for example, Barcelona)
     default_lat = 41.387917
     default_lon = 2.1699187
-
-    st.markdown("### Adjust Search Location")
-    st.info("Drag the marker and then click on the map to update the coordinates.")
-
-    # Create a folium map with a draggable marker
-    m = folium.Map(location=[default_lat, default_lon], zoom_start=12)
-    folium.Marker(
-        location=[default_lat, default_lon],
-        popup="Drag me!",
-        draggable=True
-    ).add_to(m)
     
-    # Render the map and capture the state
-    map_data = st_folium(m, width=700, height=450)
+    with col2:
+        st.text("Filters")
+        with st.expander("Location"):
+            st.markdown("### Adjust Search Location")
+            # Create a folium map with a draggable marker and an icon
+            m = folium.Map(location=[default_lat, default_lon], zoom_start=12)
+            folium.Marker(
+                location=[default_lat, default_lon],
+                popup="Drag me!",
+                draggable=True,
+                icon=folium.Icon(color="blue", icon="info-sign")
+            ).add_to(m)
+            map_data = st_folium(m, width=350, height=350)
+            st.info("Drag the marker and then click on the map to update the coordinates.")
     
-    # Extract updated coordinates:
-    # (Note: st_folium returns 'last_clicked' when the map is clicked.
-    # To update coordinates, drag the marker then click anywhere on the map.)
-    if map_data and map_data.get("last_clicked"):
-        lat = map_data["last_clicked"]["lat"]
-        lon = map_data["last_clicked"]["lng"]
-    else:
-        lat = default_lat
-        lon = default_lon
+            # Extract updated coordinates from the map if available; otherwise, use defaults
+            if map_data and map_data.get("last_clicked"):
+                lat = map_data["last_clicked"]["lat"]
+                lon = map_data["last_clicked"]["lng"]
+            else:
+                lat = default_lat
+                lon = default_lon
 
-    st.write(f"Selected location: {lat}, {lon}")
-    
+            st.write(f"Selected location: {lat}, {lon}")
+    st.divider()
     if st.button("Search (Manual)", key="manual_search"):
         results = search_engine(query, latitude=lat, longitude=lon)
         for i, r in enumerate(results):
@@ -59,7 +63,7 @@ def run_manual_query():
             "Title": [r["title"] for r in results],
             "Description": [r["description"] for r in results]
         })
-        
+
         listwise_results, query_intent = listwise_rank(query, copy.deepcopy(results))
         listwise_df = pd.DataFrame({
             "Original Pos.": [r["original_index"] for r in listwise_results],
@@ -67,14 +71,14 @@ def run_manual_query():
             "LLM Score": [r.get("llm_score", "N/A") for r in listwise_results],
             "Reasoning": [r.get("llm_reasoning", "N/A") for r in listwise_results]
         })
-        
+
         pointwise_results = re_rank_results(query, copy.deepcopy(results))
         pointwise_df = pd.DataFrame({
             "Original Pos.": [r["original_index"] for r in pointwise_results],
             "Title": [r["title"] for r in pointwise_results],
             "LLM Score": [r.get("llm_score", "N/A") for r in pointwise_results]
         })
-        
+
         m_tab1, m_tab2, m_tab3 = st.tabs(["Baseline", "LLM Listwise", "LLM Pointwise"])
         with m_tab1:
             st.subheader("Baseline Results")
@@ -86,7 +90,7 @@ def run_manual_query():
         with m_tab3:
             st.subheader("LLM Pointwise Ranking")
             st.dataframe(pointwise_df, use_container_width=True)
-            
+
 def run_csv_bulk():
     st.header("CSV Bulk Analysis")
     col_file, col_delim = st.columns(2)
