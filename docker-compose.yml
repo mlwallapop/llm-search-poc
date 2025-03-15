@@ -6,8 +6,9 @@ services:
     ports:
       - "7777:7777"
     volumes:
-      # Mount the whole project for hot reload
       - ./:/app
+      - ~/.aws:/root/.aws:ro
     environment:
       - STREAMLIT_SERVER_HEADLESS=true
       - PYTHONUNBUFFERED=1
+
