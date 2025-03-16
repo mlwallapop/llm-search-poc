@@ -1,13 +1,17 @@
-version: "3.9"
-
 services:
   streamlit-app:
     build: .
     ports:
       - "7777:7777"
     volumes:
-      # Mount the whole project for hot reload
       - ./:/app
     environment:
       - STREAMLIT_SERVER_HEADLESS=true
       - PYTHONUNBUFFERED=1
+
+  jupyter-notebook:
+    image: quay.io/jupyter/datascience-notebook:2025-02-12
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/home/jovyan/
