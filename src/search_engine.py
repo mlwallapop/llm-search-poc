@@ -4,7 +4,7 @@ from typing import List, Dict
 def search_engine(query: str, latitude: float = 41.387917, longitude: float = 2.1699187) -> List[Dict]:
     """
     Queries the Wallapop API with the provided query and returns a list of dictionaries.
-    Each dictionary contains the 'title' and 'description' of a search result.
+    Each dictionary contains the 'title', 'description', and the first thumbnail image URL of a search result.
     """
     url = "https://api.wallapop.com/api/v3/search"
     params = {
@@ -44,5 +44,11 @@ def search_engine(query: str, latitude: float = 41.387917, longitude: float = 2.
     for item in items:
         title = item.get("title", "")
         description = item.get("description", "")
-        results.append({"title": title, "description": description})
+        # Extract the first thumbnail from the images list if available.
+        thumbnail = ""
+        images = item.get("images", [])
+        if images:
+            thumbnail = images[0].get("urls", {}).get("small", "")
+        results.append({"title": title, "description": description, "thumbnail": thumbnail})
+        print(results)
     return results

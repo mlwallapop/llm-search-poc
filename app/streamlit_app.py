@@ -60,36 +60,40 @@ def run_manual_query():
 
         baseline_df = pd.DataFrame({
             "Original Pos.": [r["original_index"] for r in results],
+            "Image": [f'<img src="{r["thumbnail"]}">' for r in results],
             "Title": [r["title"] for r in results],
             "Description": [r["description"] for r in results]
-        })
+        }).to_html(escape=False, index=False)
 
         listwise_results, query_intent = listwise_rank(query, copy.deepcopy(results))
         listwise_df = pd.DataFrame({
             "Original Pos.": [r["original_index"] for r in listwise_results],
+            "Image": [f'<img src="{r["thumbnail"]}">' for r in listwise_results],
             "Title": [r["title"] for r in listwise_results],
             "LLM Score": [r.get("llm_score", "N/A") for r in listwise_results],
             "Reasoning": [r.get("llm_reasoning", "N/A") for r in listwise_results]
-        })
+        }).to_html(escape=False, index=False)
 
         pointwise_results = re_rank_results(query, copy.deepcopy(results))
         pointwise_df = pd.DataFrame({
             "Original Pos.": [r["original_index"] for r in pointwise_results],
+            "Image": [f'<img src="{r["thumbnail"]}">' for r in pointwise_results],
             "Title": [r["title"] for r in pointwise_results],
             "LLM Score": [r.get("llm_score", "N/A") for r in pointwise_results]
-        })
+        }).to_html(escape=False, index=False)
 
         m_tab1, m_tab2, m_tab3 = st.tabs(["Baseline", "LLM Listwise", "LLM Pointwise"])
         with m_tab1:
             st.subheader("Baseline Results")
-            st.dataframe(baseline_df, use_container_width=True)
+            #st.dataframe(baseline_df, use_container_width=True)
+            st.markdown(baseline_df, unsafe_allow_html=True)
         with m_tab2:
             st.subheader("LLM Listwise Ranking")
             st.markdown(f"**Model interpreted query as:** {query_intent}")
-            st.dataframe(listwise_df, use_container_width=True)
+            st.markdown(listwise_df, unsafe_allow_html=True)
         with m_tab3:
             st.subheader("LLM Pointwise Ranking")
-            st.dataframe(pointwise_df, use_container_width=True)
+            st.markdown(pointwise_df, unsafe_allow_html=True)
 
 def run_csv_bulk():
     st.header("CSV Bulk Analysis")
