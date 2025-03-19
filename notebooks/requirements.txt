@@ -6,3 +6,5 @@ langchain
 langchain_openai
 openai
 langchain-community
+google-search-results
+pygithub
