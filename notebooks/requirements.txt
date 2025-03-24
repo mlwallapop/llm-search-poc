@@ -8,3 +8,7 @@ openai
 langchain-community
 google-search-results
 pygithub
+langgraph
+youtube-transcript-api
+langchain_aws
+pypdf

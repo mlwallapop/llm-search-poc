@@ -11,10 +11,15 @@ services:
 
   jupyter-notebook:
     image: quay.io/jupyter/datascience-notebook:2025-02-12
-    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password=''
+    command: bash -c "pip install -r /home/jovyan/work/requirements.txt && jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token='' --NotebookApp.password=''"
     ports:
       - "8888:8888"
     volumes:
       - ./notebooks:/home/jovyan/work
+      - ~/.aws:/home/jovyan/.aws
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      #GITHUB_APP_ID: ${GITHUB_APP_ID}
+      #GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY}
+      #GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}
+      #GITHUB_BASE_BRANCH: ${GITHUB_BASE_BRANCH}
