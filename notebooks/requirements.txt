@@ -12,3 +12,5 @@ langgraph
 youtube-transcript-api
 langchain_aws
 pypdf
+lark 
+langchain-chroma
