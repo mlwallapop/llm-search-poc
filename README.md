@@ -45,6 +45,11 @@ Feel free to explore the folders and notebooks to see how each component of an L
 
    This command will start all the necessary services for the project.
 
+4. **Running containers**
+    There will be 2 running containers:
+    - http://localhost:8888 ---> Jupyter Notebooks
+    - http://localhost:7777 ---> LLM Rerank POC app
+
 ## Notebook folder
 
 In the notebook folder contains examples and proof-of-concepts projects that:
