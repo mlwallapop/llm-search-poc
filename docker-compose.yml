@@ -6,8 +6,12 @@ services:
     volumes:
       - ./:/app
     environment:
-      - STREAMLIT_SERVER_HEADLESS=true
-      - PYTHONUNBUFFERED=1
+      STREAMLIT_SERVER_HEADLESS: true
+      PYTHONUNBUFFERED: 1
+      LANGSMITH_TRACING: true
+      LANGSMITH_ENDPOINT: ${LANGSMITH_ENDPOINT}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY}
+      LANGSMITH_PROJECT: ${LANGSMITH_PROJECT}
 
   jupyter-notebook:
     image: quay.io/jupyter/datascience-notebook:2025-02-12
