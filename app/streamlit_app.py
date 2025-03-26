@@ -70,6 +70,7 @@ def run_manual_query():
             "Original Pos.": [r["original_index"] for r in listwise_results],
             "Image": [f'<img src="{r["thumbnail"]}">' for r in listwise_results],
             "Title": [r["title"] for r in listwise_results],
+            "Description": [r["description"] for r in listwise_results],
             "LLM Score": [r.get("llm_score", "N/A") for r in listwise_results],
             "Reasoning": [r.get("llm_reasoning", "N/A") for r in listwise_results]
         }).to_html(escape=False, index=False)
@@ -79,13 +80,14 @@ def run_manual_query():
             "Original Pos.": [r["original_index"] for r in pointwise_results],
             "Image": [f'<img src="{r["thumbnail"]}">' for r in pointwise_results],
             "Title": [r["title"] for r in pointwise_results],
-            "LLM Score": [r.get("llm_score", "N/A") for r in pointwise_results]
+            "Description": [r["description"] for r in pointwise_results],
+            "LLM Score": [r.get("llm_score", "N/A") for r in pointwise_results],
+            "Reasoning": [r.get("llm_reasoning", "N/A") for r in pointwise_results]
         }).to_html(escape=False, index=False)
 
         m_tab1, m_tab2, m_tab3 = st.tabs(["Baseline", "LLM Listwise", "LLM Pointwise"])
         with m_tab1:
             st.subheader("Baseline Results")
-            #st.dataframe(baseline_df, use_container_width=True)
             st.markdown(baseline_df, unsafe_allow_html=True)
         with m_tab2:
             st.subheader("LLM Listwise Ranking")
@@ -159,6 +161,7 @@ def run_csv_bulk():
                     listwise_df = pd.DataFrame({
                         "Original Pos.": [r["original_index"] for r in listwise_results],
                         "Title": [r["title"] for r in listwise_results],
+                        "Description": [r["description"] for r in listwise_results],
                         "LLM Score": [r.get("llm_score", "N/A") for r in listwise_results],
                         "Reasoning": [r.get("llm_reasoning", "N/A") for r in listwise_results]
                     })
@@ -167,7 +170,9 @@ def run_csv_bulk():
                     pointwise_df = pd.DataFrame({
                         "Original Pos.": [r["original_index"] for r in pointwise_results],
                         "Title": [r["title"] for r in pointwise_results],
-                        "LLM Score": [r.get("llm_score", "N/A") for r in pointwise_results]
+                        "Description": [r["description"] for r in pointwise_results],
+                        "LLM Score": [r.get("llm_score", "N/A") for r in pointwise_results],
+                        "Reasoning": [r.get("llm_reasoning", "N/A") for r in pointwise_results]
                     })
                     
                     b_tab, l_tab, p_tab = st.tabs(["Baseline", "LLM Listwise", "LLM Pointwise"])
