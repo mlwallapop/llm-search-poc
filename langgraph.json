@@ -1,0 +1,8 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "web-searcher": "./langgraph/data-enrichment-agent-python/src/enrichment_agent/graph.py:graph",
+    "codeact": "./langgraph/codeact/math_example.py:agent"
+  },
+  "env": ".env"
+}
