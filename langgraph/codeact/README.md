@@ -1,143 +1,17 @@
-# Langgraph Codeact
+# 🌐 LangGraph: Advanced LLM Orchestration and Agent Frameworks
 
-This library implements the [CodeAct architecture](https://arxiv.org/abs/2402.01030) in LangGraph. CodeAct offers an alternative to JSON function-calling by leveraging a Turing complete language (Python in this case) to combine and transform the outputs of multiple tools. This approach is used by [Manus.im](https://manus.im/) and enables solving complex tasks in fewer steps.
+Welcome to the LangGraph section! Here you'll find advanced demonstrations and frameworks designed to orchestrate and manage powerful Large Language Model (LLM)-driven agents and workflows.
 
-## Features
+## 🚀 What's Inside?
 
-- **Message History Preservation:** Message history is saved between turns to support follow-up questions.
-- **Variable Persistence:** Python variables are preserved between turns, enabling more advanced follow-up queries.
-- **Flexible Output:** Use `.invoke()` to get just the final result or `.stream()` to receive token-by-token output.
-- **Tool Integration:** You can use any custom tools, LangChain tools, or MCP tools.
-- **Model Agnostic:** Works with any model supported by LangChain (tested with Claude 3.7 so far).
-- **Custom Code Sandbox:** Bring your own code sandbox via a simple functional API.
-- **Customizable System Message:** Tailor the system prompt as needed.
+### 🛠️ CodeAct Agent
 
-## Installation
+- **Dynamic Code Execution:** Enables LLMs to dynamically generate and execute Python code, facilitating powerful automation and complex task handling.
+- **Interactive Exploration:** Ideal for tasks requiring custom logic and Python-based integrations within conversational interfaces.
 
-Install the package via pip:
+**Example Invocation:**
 
-```bash
-pip install langgraph-codeact
-```
-
-To run the example, also install:
-
-```bash
-pip install langchain langchain-anthropic
-```
-
-## Example
-
-The example below demonstrates a simple math agent built using CodeAct. It defines math tools, a custom evaluation function, compiles the CodeAct graph, and then streams a response to a user prompt.
-
-### 1. Define Your Tools
-
-Define a set of simple math functions to be used by the agent:
-
-```python
-import math
-
-def add(a: float, b: float) -> float:
-    """Add two numbers together."""
-    return a + b
-
-def multiply(a: float, b: float) -> float:
-    """Multiply two numbers together."""
-    return a * b
-
-def divide(a: float, b: float) -> float:
-    """Divide two numbers."""
-    return a / b
-
-def subtract(a: float, b: float) -> float:
-    """Subtract two numbers."""
-    return a - b
-
-def sin(a: float) -> float:
-    """Take the sine of a number."""
-    return math.sin(a)
-
-def cos(a: float) -> float:
-    """Take the cosine of a number."""
-    return math.cos(a)
-
-def radians(a: float) -> float:
-    """Convert degrees to radians."""
-    return math.radians(a)
-
-def exponentiation(a: float, b: float) -> float:
-    """Raise one number to the power of another."""
-    return a**b
-
-def sqrt(a: float) -> float:
-    """Take the square root of a number."""
-    return math.sqrt(a)
-
-def ceil(a: float) -> float:
-    """Round a number up to the nearest integer."""
-    return math.ceil(a)
-
-tools = [
-    add,
-    multiply,
-    divide,
-    subtract,
-    sin,
-    cos,
-    radians,
-    exponentiation,
-    sqrt,
-    ceil,
-]
-```
-
-### 2. Bring-Your-Own Code Sandbox
-
-Supply your own code sandbox by providing a function that accepts a code string and a dictionary of local variables. **Note:** Use a secure, sandboxed environment in production. The following `eval` function is for demonstration purposes only.
-
-```python
-import builtins
-import contextlib
-import io
-from typing import Any
-
-def eval(code: str, _locals: dict[str, Any]) -> tuple[str, dict[str, Any]]:
-    # Store original keys before execution
-    original_keys = set(_locals.keys())
-
-    try:
-        with contextlib.redirect_stdout(io.StringIO()) as f:
-            exec(code, builtins.__dict__, _locals)
-        result = f.getvalue()
-        if not result:
-            result = "<code ran, no output printed to stdout>"
-    except Exception as e:
-        result = f"Error during execution: {repr(e)}"
-
-    # Determine new variables created during execution
-    new_keys = set(_locals.keys()) - original_keys
-    new_vars = {key: _locals[key] for key in new_keys}
-    return result, new_vars
-```
-
-### 3. Create the CodeAct Graph
-
-Initialize your chat model and compile the CodeAct graph using the tools and evaluation function defined above:
-
-```python
-from langchain.chat_models import init_chat_model
-from langgraph_codeact import create_codeact
-from langgraph.checkpoint.memory import MemorySaver
-
-model = init_chat_model("claude-3-7-sonnet-latest", model_provider="anthropic")
-
-code_act = create_codeact(model, tools, eval)
-agent = code_act.compile(checkpointer=MemorySaver())
-```
-
-### 4. Run It!
-
-You can either invoke the agent to get the final result or stream the output token-by-token. The example below sends a query about a baseball scenario:
+You can interact with the CodeAct agent by providing a query, such as:
 
 ```python
 messages = [{
@@ -156,16 +30,52 @@ for typ, chunk in agent.stream(
         print("\n\n---answer---\n\n", chunk)
 ```
 
-## Running in Development Mode
+### 🌱 Data Enrichment Agent
 
-You can run the agent in development mode to test and interact with it. From the subproject's root directory, execute:
+- **Automated Data Processing:** Automatically enrich, classify, and structure your data using intelligent LLM-driven workflows.
+- **Contextual Understanding:** Extract meaningful insights from data, categorize information, and enhance content through context-aware processing.
+
+**Example Invocation:**
+
+You can invoke the Data Enrichment agent by providing structured input, such as:
+
+```python
+input_data = {
+    "text": "Apple releases the new iPhone 15 with advanced camera features and improved battery life."
+}
+
+enriched_output = enrichment_agent.invoke(input_data)
+print(enriched_output)
+```
+
+This example demonstrates how the agent can automatically classify and enrich the provided text data.
+
+## 🛠️ Getting Started
+
+1. **Install Dependencies:** Ensure your environment has all required packages installed:
+
+```bash
+pip install -r requirements.txt
+```
+
+2. **Run LangGraph:** Start experimenting from the project's root:
 
 ```bash
 langgraph dev
 ```
 
-This command launches the agent in a development environment.
+## 📁 Directory Structure
 
-## Contributing and Support
+- **`codeact/`:** Contains implementations and examples demonstrating dynamic code execution.
+- **`data-enrichment-agent-python/`:** Contains scripts and configurations for intelligent data enrichment workflows.
 
-This subproject is a demonstration of the CodeAct approach in LangGraph. Feel free to adapt or extend it to suit your needs. For any issues, improvements, or suggestions, please use the appropriate channels within your organization or project management system.
+## 🤝 Contributing
+
+We're excited to have your contributions!
+
+- 📖 Add new use-case examples or agents
+- 🚀 Improve existing workflows
+- 🐛 Report issues and propose solutions
+
+Dive in and push the boundaries of LLM orchestration! 🌟
+
