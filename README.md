@@ -6,6 +6,7 @@
 
 - 📒 **Interactive Notebooks:** Explore retrieval augmented generation (RAG), embedding models, vector stores, prompt engineering, and more!
 - 🎨 **Streamlit Application:** A hands-on demo app for LLM-based re-ranking of search results.
+- 🌐 **Containerized LangGraph Server:** Run and manage advanced LLM orchestration through a dedicated LangGraph server.
 - ⚙️ **Customizable Environment:** Easily configure your favorite LLM providers and settings.
 - 🐳 **Docker-Based Setup:** Quick setup to jumpstart your experiments using Docker.
 
@@ -73,6 +74,7 @@ docker-compose up -d
 
 - 📚 **Jupyter Notebooks:** [http://localhost:8888](http://localhost:8888)
 - 🎯 **Streamlit App (Search Re-ranking):** [http://localhost:7777](http://localhost:7777)
+- 🌐 **LangGraph Server:** [http://localhost:2024](http://localhost:2024) (see below for usage details)
 
 ## 🎮 Using the Streamlit App
 
@@ -98,13 +100,15 @@ Visit [http://localhost:8888](http://localhost:8888) to dive deeper into:
 - 🗃️ Embedding Models & Vector Stores
 - …and much more!
 
-## 🌐 Advanced Usage: LangGraph
+## 🌐 Advanced Usage: Containerized LangGraph Server
 
-Explore powerful orchestration examples under the `langgraph/` directory. After installing dependencies (`requirements.txt`), run graphs from the root:
+Explore powerful orchestration examples under the `langgraph/` directory. The LangGraph server is fully containerized for your convenience:
 
-```bash
-langgraph dev
-```
+- **Access the LangGraph Studio UI:**
+
+  [LangGraph Studio](https://smith.langchain.com/studio/?baseUrl=http://localhost:2024)
+
+Ensure you use `localhost` (or your host IP) in the browser URL above to properly connect.
 
 🧑‍🚀 **Graph Details:**
 
@@ -120,4 +124,3 @@ We warmly welcome your contributions! Join us by:
 - 🐞 Reporting bugs or proposing enhancements.
 
 🎉 Happy exploring and experimenting with the limitless possibilities of LLM orchestration!
-
