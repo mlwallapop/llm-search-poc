@@ -1,19 +1,16 @@
-# Use an official Python runtime as a parent image
 FROM python:3.11-slim
 
-# Set the working directory to /app
 WORKDIR /app
 
-# Copy requirements and install them
-COPY requirements.txt requirements.txt
+# Install dependencies
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
 
-# Copy the rest of the application code
+# Copy entire project first (necessary to install local modules)
 COPY . .
 
-# Expose port 7777
+# Now install your project locally
+RUN pip install -e .  
+
 EXPOSE 7777
 
-# Run the Streamlit app on port 7777
 CMD ["streamlit", "run", "app/streamlit_app.py", "--server.port", "7777", "--server.enableCORS", "false"]

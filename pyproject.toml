@@ -1,7 +1,68 @@
 [project]
 name = "llm-search-poc"
 version = "0.1.0"
-description = "Add your description here"
+description = "A playground project demonstrating LLM orchestration and enriched data workflows."
+authors = [
+    { name = "Matteo Longo", email = "matteo.longo@wallapop.com" },
+]
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.10"
-dependencies = []
+
+dependencies = [
+    "streamlit",
+    "pandas",
+    "requests",
+    "langchain_openai",
+    "pydantic",
+    "python-dotenv",
+    "langchain_aws",
+    "langchain_ollama",
+    "langchain-google-genai",
+    "folium",
+    "streamlit-folium",
+    "langgraph",
+    "langchain-openai",
+    "langchain-anthropic",
+    "langchain",
+    "langchain-fireworks",
+    "langchain-community",
+    "langgraph-cli[inmem]",
+    "starlette",
+    "langgraph-codeact",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy",
+    "ruff",
+    "pytest-asyncio"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["enrichment_agent"]
+package-dir = { "enrichment_agent" = "langgraph/data-enrichment-agent-python/src/enrichment_agent" }
+
+[tool.ruff]
+lint.select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # isort
+    "D",    # pydocstyle
+    "D401", # First line should be in imperative mood
+    "T201",
+    "UP"
+]
+include = ["*.py", "*.pyi", "*.ipynb"]
+lint.ignore = ["UP006", "UP007", "UP035", "D417", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D", "UP"]
+"ntbk/*" = ["D", "UP", "T201"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

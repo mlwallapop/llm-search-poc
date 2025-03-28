@@ -9,3 +9,13 @@ langchain_ollama
 langchain-google-genai
 folium
 streamlit-folium
+langgraph
+langchain-openai
+langchain-anthropic
+langchain
+langchain-fireworks
+python-dotenv
+langchain-community
+langgraph-cli[inmem]
+starlette
+langgraph-codeact
