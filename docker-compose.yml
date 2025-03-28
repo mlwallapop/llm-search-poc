@@ -50,7 +50,7 @@ services:
   langgraph:
     build: .
     container_name: llm-playground-langgraph
-    command: langgraph dev --host 0.0.0.0 --port 2024
+    command: bash -c "langgraph dev --host 0.0.0.0 --port 2024"
     ports:
       - "2024:2024"
     volumes:
