@@ -1,21 +1,14 @@
 import builtins
 import contextlib
 import io
-import math
 from typing import Any
+import os
 
 from langchain.chat_models import init_chat_model
 from langgraph_codeact import create_codeact
 from langgraph.checkpoint.memory import MemorySaver
-from tempfile import TemporaryDirectory
 
 from langchain_community.agent_toolkits import FileManagementToolkit
-
-# We'll make a temporary directory to avoid clutter
-working_directory = TemporaryDirectory()
-toolkit = FileManagementToolkit(
-)  # If you don't provide a root_dir, operations will default to the current working directory
-toolkit.get_tools()
 
 
 
@@ -36,9 +29,9 @@ def eval(code: str, _locals: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     new_keys = set(_locals.keys()) - original_keys
     new_vars = {key: _locals[key] for key in new_keys}
     return result, new_vars
-
+root_dir = f"{os.getcwd()}/ai_home/"
 fmtk = FileManagementToolkit(
-    root_dir='./ai_home'
+    root_dir=root_dir
 )
 tools =  {a.args_schema for a in fmtk.get_tools()}
 model = init_chat_model("gpt-4o-mini", model_provider="openai")
