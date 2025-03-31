@@ -2,7 +2,9 @@
   "dependencies": ["."],
   "graphs": {
     "web-searcher": "./langgraph/data-enrichment-agent-python/src/enrichment_agent/graph.py:graph",
-    "codeact": "./langgraph/codeact/math_example.py:agent"
+    "codeact": "./langgraph/codeact/math_example.py:agent",
+    "contextual-coder": "./langgraph/contextual_coder/contextual_coder.py:graph",
+    "task_maistro": "./langgraph/task_mAIstro/task_maistro.py:graph"
   },
   "env": ".env"
 }
