@@ -37,12 +37,9 @@ def eval(code: str, _locals: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     new_vars = {key: _locals[key] for key in new_keys}
     return result, new_vars
 
-
-from langchain_community.tools.file_management.copy import CopyFileTool
-from langchain_community.tools.file_management.list_dir import ListDirectoryTool
-tools_test =  [ListDirectoryTool]
-
-fmtk = FileManagementToolkit()
+fmtk = FileManagementToolkit(
+    root_dir='./ai_home'
+)
 tools =  {a.args_schema for a in fmtk.get_tools()}
 model = init_chat_model("gpt-4o-mini", model_provider="openai")
 #model = init_chat_model("claude-3-7-sonnet-latest", model_provider="anthropic")
